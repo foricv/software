@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<header>
+  <nav>
+    <ul class="topnav">
+      <li><a href="/">Cv Making Software</a></li>
+      <li><a href="/submit-certificate">Submit New Certificate</a></li>
+      <li><a href="/photocopies">Photo Copies</a></li>
+    </ul>
+  </nav>
+</header>
+
+<head>
+  <meta charset="UTF-8">
+  <title>CV Data Entry Form</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+
+  <h2>CV Data Entry Form</h2>
+
+  <form action="/submit" method="post">
+
+    
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="Designation">Designation</label>
+        <input type="text" id="Designation" name="Designation" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="Name">Name</label>
+        <input type="text" id="Name" name="Name" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="fname">Father's Name</label>
+        <input type="text" id="fname" name="fname">
+      </div>
+      <div class="form-group">
+        <label for="dob">Date of Birth</label>
+        <input 
+            type="text" 
+            id="dob" 
+            name="dob" 
+            placeholder="dd-mm-yyyy" 
+            maxlength="10" 
+            pattern="^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-\d{4}$" 
+            title="Enter date in dd-mm-yyyy format" 
+            required
+          >
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="CNIC">CNIC</label>
+        <input type="text" id="CNIC" name="CNIC" maxlength="15" placeholder="12345-1234567-1" required>
+      </div>
+      <div class="form-group">
+        <label for="Passport">Passport</label>
+        <input type="text" id="Passport" name="Passport" placeholder="AA1234567">
+      </div>
+    </div>
+
+<div class="form-row">
+  <div class="form-group">
+    <label for="ccc">CCC Form</label>
+    <select id="ccc" name="ccc" required>
+      <option value="">-- Select --</option> <!-- No default selection -->
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+  </div>
+
+  <!-- Passport Expiry field container -->
+  <div class="form-group" id="passport-expiry-container" style="display: none;">
+    <label for="expiry">Passport Expiry</label>
+    <input type="text" id="expiry" name="expiry" placeholder="dd-mm-yyyy">
+  </div>
+</div>
+
+
+
+
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="Nationality">Nationality</label>
+        <select id="Nationality" name="Nationality">
+          <option value="Pakistani">Pakistani</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="Religion">Religion</label>
+        <select id="Religion" name="Religion">
+          <option value="Islam">Islam</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="Domicile">Domicile</label>
+        <input type="text" id="Domicile" name="Domicile">
+      </div>
+      <div class="form-group">
+        <label for="MaritalStatus">Marital Status</label>
+        <select id="MaritalStatus" name="MaritalStatus">
+          <option value="single">Single</option>
+          <option value="married">Married</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="cell">Cell</label>
+        <input 
+            type="text" 
+            id="cell" 
+            name="cell" 
+            placeholder="0300-0000000" 
+        >
+      </div>
+      <div class="form-group">
+        <label for="Address">Address</label>
+        <input type="text" id="Address" name="Address">
+      </div>  
+    </div>
+
+    <div class="form-row">
+  <div class="form-group">
+    <label for="Qualification">Qualification</label>
+    <select id="Qualification" name="Qualification">
+      <option value="Middle">Middle</option>
+      <option value="Matric">Matric</option>
+      <option value="FA">FA</option>
+      <option value="BA">BA</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="cv">CV Template Name</label>
+    <select id="cv" name="cv">
+      <option value="">-- Select a template --</option>
+      {% for i in range(1, 13) %}
+        <option value="cv {{ i }}">cv {{ i }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+
+    <div class="form-row">
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label>Mode</label>
+        <div style="display: flex; gap: 20px;">
+          <label><input type="radio" name="mode" value="auto" id="mode_auto" checked> Auto</label>
+          <label><input type="radio" name="mode" value="manual" id="mode_manual"> Manual</label>
+        </div>
+        
+      </div>
+    </div>
+
+    
+
+    <div id="manual_experiences">
+  <h4>Manual Experience Entry</h4>
+
+  <!-- EXPERIENCE 1 -->
+  <h5>Experience 1</h5>
+  <div class="manual-row">
+    <div class="form-group">
+      <label for="exp1_country">Country</label>
+      <select id="exp1_country" name="Exp1 Country"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="exp1_type">Company Type</label>
+      <select id="exp1_type" name="Exp1 Type"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="exp1_company">Company</label>
+      <select id="exp1_company" name="Exp1 Company"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="exp1_project">Project</label>
+      <select id="exp1_project" name="Exp1 Project"></select>
+    </div>
+  </div>
+
+  <div class="manual-row">
+    <div class="form-group">
+      <label for="from1">From</label>
+      <input type="text" id="from1" name="From" placeholder="dd-mm-yyyy">
+    </div>
+    <div class="form-group">
+      <label for="to1">To</label>
+      <input type="text" id="to1" name="To" placeholder="dd-mm-yyyy">
+    </div>
+  </div>
+
+  <!-- EXPERIENCE 2 -->
+  <h5>Experience 2</h5>
+  <div class="manual-row">
+      <div class="form-group">
+      <label for="exp2_country">Country</label>
+      <select id="exp2_country" name="Exp2 Country"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="exp2_type">Company Type</label>
+      <select id="exp2_type" name="Exp2 Type"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="exp2_company">Company</label>
+      <select id="exp2_company" name="Exp2 Company"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="exp2_project">Project</label>
+      <select id="exp2_project" name="Exp2 Project"></select>
+    </div>
+  </div>
+
+  <div class="manual-row">
+    <div class="form-group">
+      <label for="from2">From2</label>
+      <input type="text" id="from2" name="From2" placeholder="dd-mm-yyyy">
+    </div>
+    <div class="form-group">
+      <label for="to2">To2</label>
+      <input type="text" id="to2" name="To2" placeholder="dd-mm-yyyy">
+    </div>
+  </div>
+</div>
+
+
+    <button type="submit">Submit</button>
+    <div class="actions">
+      <button id="genBtn" onclick="startPDF()">Generate PDF</button>
+    </div>
+
+    <div id="logBox"></div>
+  </form>
+
+  <div class="table-wrapper">
+    {% if records %}
+      <h2>Existing Records</h2>
+      <table>
+        <thead>
+          <tr>
+            {% for col in columns %}
+              <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in records %}
+            <tr>
+              {% for col in columns %}
+                <td>{{ row[col] }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      
+      </table>
+    {% else %}
+      <p>No records found.</p>
+    {% endif %}
+    <!-- 🔹 Clear Data Button -->
+<div style="margin-top: 20px; text-align: center;">
+  <button type="button" id="clearBtn" style="background-color: #d9534f; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">
+    🗑️ Clear All Data
+  </button>
+</div>
+</div>
+
+</body>
+</html>

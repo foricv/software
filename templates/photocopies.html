@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CNIC Print Tool</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='photocopy.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="controls no-print">
+    <label>
+      <input type="radio" name="layoutMode" value="template3" checked /> 3 Image Layout
+    </label>
+    <label>
+      <input type="radio" name="layoutMode" value="template8" /> 8 CNIC Blocks Layout
+    </label>
+  </div>
+
+  <!-- === TEMPLATE 3 === -->
+  <div id="template3" class="template">
+    <div class="controls no-print">
+      <input type="file" id="imageInput" multiple accept="image/*" />
+      <button id="prepareBtn">Prepare</button>
+      <button onclick="window.print()">Print</button>
+      <div class="note">Select exactly 3 images: CNIC Front, CNIC Back, Full Photo</div>
+    </div>
+
+    <div id="layout">
+      <div class="row">
+        <div class="cnic-block">
+          <img id="img1" />
+          <div class="buttons no-print">
+            <button onclick="openCropModal('img1')">Crop</button>
+            <button onclick="applyGrayscale('img1')">B&W</button>
+            <button onclick="openAdjustModal('img1')">Adjust</button>
+            <button onclick="rotateImage('img1')">Rotate</button>
+            <button onclick="toggleFitFill('img1', this)">Fill Container</button>
+            <button onclick="deleteImage('img1')">Delete</button>
+          </div>
+        </div>
+        <div class="cnic-block">
+          <img id="img2" />
+          <div class="buttons no-print">
+            <button onclick="openCropModal('img2')">Crop</button>
+            <button onclick="applyGrayscale('img2')">B&W</button>
+            <button onclick="openAdjustModal('img2')">Adjust</button>
+            <button onclick="rotateImage('img2')">Rotate</button>
+            <button onclick="toggleFitFill('img2', this)">Fill Container</button>
+            <button onclick="deleteImage('img2')">Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="row full-photo">
+        <div class="photo-block">
+          <img id="img3" />
+          <div class="buttons no-print">
+            <button onclick="openCropModal('img3')">Crop</button>
+            <button onclick="applyGrayscale('img3')">B&W</button>
+            <button onclick="openAdjustModal('img3')">Adjust</button>
+            <button onclick="rotateImage('img3')">Rotate</button>
+            <button onclick="toggleFitFill('img3', this)">Fill Container</button>
+            <button onclick="deleteImage('img3')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === TEMPLATE 8 === -->
+  <div id="template8" class="template" style="display: none;">
+    <div class="controls no-print">
+      <input type="file" id="multiImageInput" multiple accept="image/*" />
+      <label>
+        Copies per CNIC:
+        <input type="number" id="copiesPerImage" value="1" min="1" max="8" />
+      </label>
+      <button id="generateTemplateBtn">Generate Template</button>
+      <button onclick="window.print()">Print</button>
+    </div>
+
+    <div id="multiLayout"></div>
+  </div>
+
+  <!-- Modals -->
+  <div id="adjustModal" class="modal">
+    <div class="modal-content">
+      <img id="adjustImage" />
+      <label>Brightness: <input type="range" id="brightness" min="0" max="200" value="100" /></label>
+      <label>Contrast: <input type="range" id="contrast" min="0" max="200" value="100" /></label>
+      <div class="modal-buttons">
+        <button id="applyAdjust">Apply</button>
+        <button id="cancelAdjust">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cropModal" class="modal">
+    <div class="modal-content">
+      <img id="cropImage" />
+      <div class="modal-buttons">
+        <button id="applyCrop">Apply Crop</button>
+        <button id="cancelCrop">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="{{ url_for('static', filename='photocopy.js') }}"></script>
+</body>
+</html>

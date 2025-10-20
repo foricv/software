@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<header>
+  <nav>
+    <ul class="topnav">
+      <li><a href="/">Cv Making Software</a></li>
+      <li><a href="/submit-certificate">Submit New Certificate</a></li>
+      <li><a href="/photocopies">Photo Copies</a></li>
+    </ul>
+  </nav>
+</header>
+
+<head>
+  <meta charset="UTF-8">
+  <title>SUBMIT NEW CERTIFICATE</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+<body>
+
+  <h2>SUBMIT NEW CERTIFICATE</h2>
+
+  <form action="/submit-certificate" method="post">
+
+     <div class="form-row">
+      <div class="form-group">
+        <label for="companyname">Company Name</label>
+        <input type="text" id="companyname" name="companyname" required>
+      </div>
+       
+      <div class="form-group">
+        <label for="companyproject">Company Project</label>
+        <input type="text" id="companyproject" name="companyproject" required>
+       </div>
+            
+      <div class="form-group">
+        <label for="companyaddress">Company Address</label>
+        <input type="text" id="companyaddress" name="companyaddress" required>
+      </div>
+
+      <div class="form-group">
+        <label for="contact">Company Contact</label>
+        <input type="text" id="contact" name="contact" required>
+       </div>
+    </div>
+
+
+    <div class="form-row">
+              
+       <div class="form-group">
+        <label for="country">Country</label>
+        <input type="text" id="country" name="country" required>
+       </div>
+
+           
+       <div class="form-group">
+        <label for="template">Choose Template</label>
+        <select id="template" name="template">
+          <option value="Page 1">Page 1</option>
+          <option value="Page 2">Page 2</option>
+        </select>
+      </div>
+    </div>
+     
+  <button type="submit">Submit</button>          
+
+  {% if message %}
+  <div class="alert-box {% if '❌' in message %}error{% else %}success{% endif %}">
+    {{ message | safe }}
+  </div>
+  {% endif %}
+
+  </form>
+  
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+Flask
+gunicorn
+pandas
+openpyxl
+lxml
+python-docx
+PyPDF2
+python-dateutil
+pypandoc
+docx2pdf

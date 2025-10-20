@@ -1,0 +1,151 @@
+/* General styles */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+.controls {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center; /* Center buttons */
+  gap: 20px; /* space between buttons */
+}
+
+.note {
+  margin-top: 10px;
+  font-style: italic;
+  color: #555;
+}
+
+#layout {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center; /* Center all rows */
+}
+
+.row {
+  display: flex;
+  justify-content: center; /* Center all blocks in a row */
+  gap: 40px;
+}
+
+.cnic-block, .photo-block {
+  border: 0px solid #ccc;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cnic-block {
+  width: 88mm;  /* ~328px */
+  height: 56mm; /* ~209px */
+}
+
+.photo-block {
+  width: 7in;   /* 7 inch */
+  height: 5in;  /* 5 inch */
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;  /* default to fit */
+  transition: transform 0.3s ease, filter 0.3s ease;
+  user-select: none;
+  pointer-events: none;
+}
+
+.buttons {
+  margin-top: 5px;
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%); /* This already centers buttons */
+}
+
+button {
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #007BFF;
+  background-color: #fff;
+  color: #007BFF;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #007BFF;
+  color: white;
+}
+
+/* Modal Styles */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-content img {
+  max-width: 500px;
+  max-height: 400px;
+  margin-bottom: 10px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.no-print {
+  /* hide these elements on print */
+  @media print {
+    display: none !important;
+  }
+}
+
+.cnic-block {
+  width: 88mm;  /* fixed size */
+  height: 56mm;
+  box-sizing: border-box;
+  border: 1px solid #ccc; /* for debugging */
+  margin-bottom: 10px;
+}
+
+#multiLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  width: calc(2 * 88mm + 20px); /* for two blocks side by side + gap */
+}
