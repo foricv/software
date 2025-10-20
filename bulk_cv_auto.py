@@ -279,90 +279,83 @@ def fill_ccc_docx(data_dict, output_path):
 
 # In your make_pdfs() function, change the conversion section to something like:
 
+# ==========================================================
+# STEP 2: Fill templates, convert to PDF, and merge
+# ==========================================================
 def make_pdfs():
     print("[Step 2] Filling templates, converting to PDF, and adding CCC if needed…")
 
-    df = pd.read_excel(UPDATED_PATH)
-    names_list = []
+    # Helper function to find file ignoring case
+    def find_file_case_insensitive(folder, filename):
+        """Find a file in the folder ignoring case differences."""
+        if not os.path.exists(folder):
+            return None
+        target = filename.lower()
+        for f in os.listdir(folder):
+            if f.lower() == target:
+                return os.path.join(folder, f)
+        return None
+
+    try:
+        df = pd.read_excel(UPDATED_EXCEL_PATH)
+    except Exception as e:
+        print(f"[ERROR] Could not read Excel: {e}")
+        return
 
     for idx, row in df.iterrows():
-        name = re.sub(r'[:<>"/\\|?*\n\r\t]', "_", str(row.get("Name", f"row_{idx+1}"))).strip()
-        name = re.sub(r"\s+", " ", name)
-        print(f"[{idx+1}/{len(df)}] Preparing docs for: {name}")
+        name = str(row.get("name", "Unknown"))
+        print(f"[{idx + 1}/{len(df)}] Preparing docs for: {name}")
 
-        replacements = {col: row[col] for col in df.columns if pd.notna(row[col])}
-        try:
-            fmt = "%d-%m-%Y"
-            f1 = datetime.strptime(str(row.get("From", "")), fmt)
-            t1 = datetime.strptime(str(row.get("To", "")), fmt)
-            f2 = datetime.strptime(str(row.get("From2", "")), fmt)
-            t2 = datetime.strptime(str(row.get("To2", "")), fmt)
-            total_months = ((t1 - f1).days + (t2 - f2).days) // 30
-            years, months = divmod(total_months, 12)
-            replacements["total"] = f"{years}Y{months}M"
-        except Exception:
-            replacements["total"] = ""
+        # Find files ignoring case
+        exp1_file = find_file_case_insensitive(EXP1_FOLDER, str(row.get("exp1", "")).strip() + ".docx")
+        exp2_file = find_file_case_insensitive(EXP2_FOLDER, str(row.get("exp2", "")).strip() + ".docx")
+        cv_file   = find_file_case_insensitive(CV_FOLDER,   str(row.get("cv", "")).strip() + ".docx")
 
-        # Source templates
-        exp1_file = os.path.join(EXP1_FOLDER, str(row.get("exp1", "")).strip() + ".docx")
-        exp2_file = os.path.join(EXP2_FOLDER, str(row.get("exp2", "")).strip() + ".docx")
-        cv_file   = os.path.join(CV_FOLDER,   str(row.get("cv", "")).strip()   + ".docx")
+        # Create output paths
+        temp_dir = os.path.join("temp", name)
+        os.makedirs(temp_dir, exist_ok=True)
+        final_docx = os.path.join(temp_dir, f"{name}_cv.docx")
 
-        # Output DOCX files in temp
-        out_cv   = os.path.join(TEMP_FOLDER, f"{name}_cv.docx")
-        out_exp1 = os.path.join(TEMP_FOLDER, f"{name}_exp1.docx")
-        out_exp2 = os.path.join(TEMP_FOLDER, f"{name}_exp2.docx")
+        replacements = {col: str(val) for col, val in row.items() if pd.notna(val)}
 
-        # Replace placeholders
-        for src, dest in [(cv_file, out_cv), (exp1_file, out_exp1), (exp2_file, out_exp2)]:
-            if os.path.exists(src):
+        for src in [exp1_file, exp2_file, cv_file]:
+            if src and os.path.exists(src):
+                dest = os.path.join(temp_dir, os.path.basename(src))
                 replace_placeholders(src, replacements, dest)
             else:
-                print(f"[WARN] Missing source file: {src}")
+                print(f"[WARN] Missing source file: {src or 'Unknown'}")
 
-        # CCC form if selected
-        out_ccc = None
-        if str(row.get("ccc", "No")).strip().lower() == "yes":
-            if os.path.exists(CCC_TEMPLATE):
-                out_ccc = os.path.join(TEMP_FOLDER, f"{name}_ccc.docx")
-                replace_placeholders(CCC_TEMPLATE, replacements, out_ccc)
-                print(f"[OK] CCC form filled for: {name}")
-            else:
-                print(f"[WARN] CCC template not found for: {name}")
+        # Check if LibreOffice exists for DOCX→PDF conversion
+        libreoffice_path = shutil.which("soffice")
+        if not libreoffice_path:
+            print("[WARN] LibreOffice not found on PATH — skipping PDF conversion.")
+            continue
 
-        names_list.append((name, out_cv, out_exp1, out_exp2, out_ccc))
+        # Convert DOCX → PDF
+        try:
+            subprocess.run([
+                libreoffice_path, "--headless", "--convert-to", "pdf",
+                "--outdir", temp_dir, final_docx
+            ], check=True)
+        except Exception as e:
+            print(f"[WARN] Did not convert to PDF: {final_docx} ({e})")
 
-    # Convert DOCX files to PDF one by one
-    for name, out_cv, out_exp1, out_exp2, out_ccc in names_list:
-        pdfs = []
-        for docx_file in [out_cv, out_exp1, out_exp2, out_ccc]:
-            if docx_file and os.path.exists(docx_file):
-                pdf_path = docx_to_pdf_with_libreoffice(docx_file, OUTPUT_FOLDER)
-                if pdf_path:
-                    pdfs.append(pdf_path)
-                else:
-                    print(f"[WARN] Did not convert to PDF: {docx_file}")
-
-        if pdfs:
-            merger = PdfMerger()
-            for pdf in pdfs:
-                merger.append(pdf)
-            final_pdf = os.path.join(OUTPUT_FOLDER, f"{name}.pdf")
-            merger.write(final_pdf)
-            merger.close()
-            print(f"[OK] Final PDF created: {final_pdf}")
-        else:
+        # Merge PDFs if available
+        pdf_files = [os.path.join(temp_dir, f) for f in os.listdir(temp_dir) if f.endswith(".pdf")]
+        if not pdf_files:
             print(f"[WARN] No PDFs to merge for: {name}")
+            continue
 
-    # Cleanup temp
-    for f in os.listdir(TEMP_FOLDER):
-        if f.lower().endswith((".docx", ".pdf")):
-            try:
-                os.remove(os.path.join(TEMP_FOLDER, f))
-            except Exception as e:
-                print(f"[WARN] Cleanup failed for {f}: {e}")
+        output_pdf = os.path.join("output", f"{name}.pdf")
+        os.makedirs("output", exist_ok=True)
+        merge_pdfs(pdf_files, output_pdf)
+        print(f"[OK] PDF created: {output_pdf}")
+
+        # Clean up temporary directory
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
     print("[DONE] All documents processed and temp cleaned up.")
+
 
 if __name__ == "__main__":
     adjust_dates()
