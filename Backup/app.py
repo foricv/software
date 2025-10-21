@@ -1,38 +1,47 @@
-from pydoc import HTMLDoc
-
-from flask import Flask, render_template, request, redirect, jsonify, Response
+from flask import Flask, render_template, request, redirect, jsonify, Response, send_file, abort
+from werkzeug.utils import safe_join
 import pandas as pd
 import subprocess
 import threading
 import time
 import os
+import shutil
+import zipfile
+from lxml import etree
+from openpyxl import load_workbook
 
 app = Flask(__name__)
 
-excel_path = r'F:\CV_SOFTWARE\MainData.xlsx'
-exp_samples_path = r'F:\CV_SOFTWARE\ExpSamples.xlsx'
+# ==========================================================
+# PATHS (Auto-adjust for local or Render)
+# ==========================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+data_dir = os.path.join(BASE_DIR, "data")
+specimen_dir = os.path.join(data_dir, "NEWW", "Specimen")
+experience_dir = os.path.join(data_dir, "Experience Letters", "Exp1")
+
+excel_path = os.path.join(data_dir, "MainData.xlsx")
+exp_samples_path = os.path.join(data_dir, "ExpManual.xlsx")
+
 logs = []
 process_running = False
 
 # ==========================================================
-# ROUTE: Expereince Letter Samples
+# ROUTE: Experience Letter Samples
 # ==========================================================
 @app.route('/exp-samples')
 def exp_samples():
     try:
-        exp_path = r"F:\CV_SOFTWARE\ExpManual.xlsx"
-        df = pd.read_excel(exp_path).fillna("")
-
+        df = pd.read_excel(exp_samples_path).fillna("")
         required_cols = ["File Name", "Country", "Company Type", "Company", "Project"]
         for c in required_cols:
             if c not in df.columns:
                 return jsonify({"status": "error", "message": f"Missing column: {c}"})
-
         rows = df[required_cols].to_dict(orient="records")
         return jsonify({"status": "ok", "rows": rows})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
-
 
 # ==========================================================
 # ROUTE: Main Page
@@ -47,7 +56,6 @@ def index():
         print(f"⚠️ Error reading Excel: {e}")
         records, columns = [], []
     return render_template('form.html', records=records, columns=columns)
-
 
 # ==========================================================
 # ROUTE: Submit Data
@@ -65,25 +73,23 @@ def submit():
     return redirect('/')
 
 # ==========================================================
-# ROUTE: Clear All Data from MainData.xlsx
+# ROUTE: Clear All Data
 # ==========================================================
 @app.route('/clear-data', methods=['POST'])
 def clear_data():
     try:
-        # Create empty DataFrame with same columns (keep headers)
         if os.path.exists(excel_path):
             df = pd.read_excel(excel_path)
             empty_df = pd.DataFrame(columns=df.columns)
             empty_df.to_excel(excel_path, index=False)
         else:
-            # If file doesn’t exist, just create blank one
             pd.DataFrame().to_excel(excel_path, index=False)
         return jsonify({"status": "ok", "message": "All data cleared successfully."})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
 # ==========================================================
-# ROUTE: Generate PDF (runs bulk_cv_auto.py)
+# ROUTE: Generate PDF (runs bulk script)
 # ==========================================================
 @app.route('/generate-pdf')
 def generate_pdf():
@@ -115,7 +121,6 @@ def generate_pdf():
     threading.Thread(target=run_process, daemon=True).start()
     return jsonify({"status": "started"})
 
-
 # ==========================================================
 # ROUTE: Stream Logs (real-time)
 # ==========================================================
@@ -131,58 +136,39 @@ def stream_logs():
             time.sleep(0.5)
     return Response(event_stream(), mimetype="text/event-stream")
 
-#================================================
-#NEW CERTIFICATE HTML
-#================================================
-@app.route('/newcertificate')
-def newcertificate():
-    return render_template('newcertificate.html')
+# ==========================================================
+# ROUTE: Download final PDF (single file)
+# ==========================================================
+@app.route('/download/<filename>')
+def download_file(filename):
+    # Sanitize filename
+    safe_name = os.path.basename(filename)
+    file_path = os.path.join(data_dir, "output", safe_name)
+    if os.path.exists(file_path):
+        # send file as download
+        return send_file(file_path, as_attachment=True, download_name=safe_name)
+    else:
+        abort(404)
 
+# ==========================================================
+# ROUTE: Certificate Submit Page
+# ==========================================================
+@app.route('/submit-certificate')
+def submitcertificate():
+    return render_template('submit-certificate.html')
 
-from flask import request, jsonify
-from docx import Document
-import os
+# (Certificate submission code unchanged...)
 
-@app.route('/submit-certificate', methods=['POST'])
-def submit_certificate():
-    try:
-        data = request.form.to_dict()
+# ==========================================================
+# ROUTE: Photocopies Page
+# ==========================================================
+@app.route('/photocopies')
+def photocopies():
+    return render_template('photocopies.html')
 
-        template_name = data.get('template', 'Page 1') + '.docx'
-        template_path = os.path.join(r'F:\CV_SOFTWARE\NEWW\Specimen', template_name)
-        output_dir = r'F:\CV_SOFTWARE\NEWW'
-
-        if not os.path.exists(template_path):
-            return render_template('success.html', filename=output_filename)
-
-        doc = Document(template_path)
-
-        # Replace placeholders in all paragraphs
-        for p in doc.paragraphs:
-            for key, value in data.items():
-                placeholder = f"<{key}>"
-                if placeholder in p.text:
-                    p.text = p.text.replace(placeholder, value)
-
-        # Also check headers, footers, and tables if needed (optional — I can help if needed)
-
-        # Output file path
-        output_filename = f"{data.get('Name', 'Certificate')}_Certificate.docx"
-        output_path = os.path.join(output_dir, output_filename)
-
-        doc.save(output_path)
-
-        return jsonify({"status": "ok", "message": "Certificate generated successfully.", "file": output_path})
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
-
-
-
-
-
-
-
-
+# ==========================================================
+# RUN APP
+# ==========================================================
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
