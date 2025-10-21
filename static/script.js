@@ -1,13 +1,13 @@
 // ===============================
-// Start PDF generation
+// Start DOC generation
 // ===============================
-function startPDF() {
-  const btn = document.getElementById("genBtn");
+function startDOCX() {
+  const btn = document.getElementById("genDocBtn");
   const logBox = document.getElementById("logBox");
   btn.disabled = true;
-  logBox.innerHTML = "<div class='info'>⚙️ Starting PDF generation...</div>";
+  logBox.innerHTML = "<div class='info'>📝 Starting DOCX generation...</div>";
 
-  fetch("/generate-pdf")
+  fetch("/generate-doc")
     .then((r) => r.json())
     .then((d) => {
       if (d.status === "started") {
@@ -16,8 +16,13 @@ function startPDF() {
         logBox.innerHTML += "<div class='error'>❌ Already running or error.</div>";
         btn.disabled = false;
       }
+    })
+    .catch((err) => {
+      logBox.innerHTML += `<div class='error'>⚠️ Request failed: ${err}</div>`;
+      btn.disabled = false;
     });
 }
+
 
 // ===============================
 // Watch Flask log stream (Server Sent Events)
