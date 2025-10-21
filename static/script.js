@@ -7,7 +7,7 @@ function startDOCX() {
   btn.disabled = true;
   logBox.innerHTML = "<div class='info'>📝 Starting DOCX generation...</div>";
 
-  fetch("/generate-doc")
+  fetch("/generate-docx")
     .then((r) => r.json())
     .then((d) => {
       if (d.status === "started") {
