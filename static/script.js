@@ -278,3 +278,48 @@ document.addEventListener("DOMContentLoaded", function () {
   cccSelect.addEventListener("change", toggleExpiryField);
 });
 
+function downloadDOCX() {
+  const btn = document.getElementById("genDocBtn");
+  btn.disabled = true;
+
+  fetch("/generate-docx")
+    .then((r) => r.blob()) // <- read as binary
+    .then((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "merged_doc.docx"; // fallback filename
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      btn.disabled = false;
+    })
+    .catch((err) => {
+      alert("❌ Failed to download DOCX: " + err);
+      btn.disabled = false;
+    });
+}
+
+function downloadZIP() {
+  const btn = document.getElementById("genZipBtn");
+  btn.disabled = true;
+
+  fetch("/generate-zip")
+    .then(r => r.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "all_candidates.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      btn.disabled = false;
+    })
+    .catch(err => {
+      alert("❌ Failed to download ZIP: " + err);
+      btn.disabled = false;
+    });
+}
