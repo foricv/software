@@ -71,6 +71,16 @@ def merge_docx_files(docs_list):
 
 # -------------------- Adjust Dates --------------------
 def adjust_dates(df_main):
+    # Force all relevant columns to object (string-compatible)
+    cols_to_fix = [
+        "Exp1 Company", "Exp1 Project", "From", "To",
+        "Exp2 Company", "Exp2 Project", "From2", "To2",
+        "exp1", "exp2"
+    ]
+    for col in cols_to_fix:
+        if col in df_main.columns:
+            df_main[col] = df_main[col].astype("object")
+
     min_exp_years = 2
     max_exp_years = 3
     min_gap_months = 12
